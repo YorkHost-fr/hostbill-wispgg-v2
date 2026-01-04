@@ -1,214 +1,344 @@
-# Module Wisp.gg - AUTO-FETCH Feature
+# Contributing to Wisp.gg Module for HostBill
 
-## 🎯 Objectif
+First off, thank you for considering contributing to this project! 🎉
 
-Cette modification ajoute la fonctionnalité **AUTO-FETCH** au module Wisp.gg pour HostBill. Le module récupère automatiquement les configurations depuis l'API Wisp.gg au lieu de nécessiter une saisie manuelle.
+## Code of Conduct
 
-## ✨ Fonctionnalités AUTO-FETCH
+This project and everyone participating in it is governed by our Code of Conduct. By participating, you are expected to uphold this code. Please report unacceptable behavior to the project maintainers.
 
-Le module récupère automatiquement :
+## How Can I Contribute?
 
-1. **Egg Variables** - Toutes les variables d'environnement avec leurs valeurs par défaut
-2. **Startup Command** - La commande de démarrage du serveur
-3. **Docker Image** - L'image Docker par défaut
+### Reporting Bugs
 
-## 🔧 Comment ça fonctionne
+Before creating bug reports, please check the existing issues to avoid duplicates. When you create a bug report, include as many details as possible:
 
-### Lors de la création d'un serveur (`Create()`)
+**Required Information:**
+- HostBill version
+- Wisp.gg panel version
+- PHP version
+- Module version
+- Error messages (exact text)
+- Steps to reproduce
+- Expected behavior
+- Actual behavior
 
-1. Le module appelle `getEggWithIncludes()` qui fait une requête API :
+**Optional but Helpful:**
+- Debug logs (`/tmp/wisp_debug.log`)
+- Screenshots
+- Server configuration (resources, egg settings)
+
+**Template:**
+```markdown
+**Environment:**
+- HostBill: 2024.01.00
+- Wisp.gg: Latest
+- PHP: 8.1
+- Module: 1.0.2
+
+**Description:**
+[Clear description of the bug]
+
+**Steps to Reproduce:**
+1. Go to '...'
+2. Click on '...'
+3. Scroll down to '...'
+4. See error
+
+**Expected Behavior:**
+[What you expected to happen]
+
+**Actual Behavior:**
+[What actually happened]
+
+**Debug Logs:**
+```
+[Paste relevant debug log lines]
+```
+
+**Screenshots:**
+[If applicable]
+```
+
+### Suggesting Enhancements
+
+Enhancement suggestions are tracked as GitHub issues. When creating an enhancement suggestion, include:
+
+- **Clear title and description**
+- **Use case**: Why is this enhancement useful?
+- **Expected behavior**: How should it work?
+- **Benefits**: Who will benefit and how?
+- **Examples**: Code examples or mockups if applicable
+
+**Template:**
+```markdown
+**Feature Request:** [Short title]
+
+**Use Case:**
+[Describe the problem you're trying to solve]
+
+**Proposed Solution:**
+[Describe how you envision this feature working]
+
+**Benefits:**
+- Benefit 1
+- Benefit 2
+
+**Additional Context:**
+[Any other context, screenshots, or examples]
+```
+
+### Pull Requests
+
+1. **Fork the repository**
+   ```bash
+   git clone https://github.com/yourusername/hostbill-wispgg-enhanced.git
+   cd hostbill-wispgg-enhanced
    ```
-   GET /api/admin/nests/{nest_id}/eggs/{egg_id}?include=variables
+
+2. **Create a feature branch**
+   ```bash
+   git checkout -b feature/your-feature-name
    ```
 
-2. Le module analyse la réponse et extrait :
-   - Les variables : `relationships.variables.data[]`
-   - Le startup : `attributes.startup`
-   - Le docker image : `attributes.docker_images` ou `attributes.docker_image`
+3. **Make your changes**
+   - Follow the [coding standards](#coding-standards)
+   - Add comments for complex logic
+   - Update documentation if needed
 
-3. Si les champs sont vides dans HostBill, le module utilise les valeurs auto-fetchées
-4. Si les champs contiennent des valeurs, le module utilise ces valeurs (override manuel)
+4. **Test your changes**
+   - Test with a live HostBill installation
+   - Verify with multiple egg types
+   - Check debug logs for errors
+   - Test both AUTO-FETCH and manual configurations
 
-## 📋 Modifications apportées
+5. **Commit your changes**
+   ```bash
+   git add .
+   git commit -m "Add: Your feature description"
+   ```
+   
+   Follow [conventional commits](https://www.conventionalcommits.org/):
+   - `feat:` New feature
+   - `fix:` Bug fix
+   - `docs:` Documentation changes
+   - `refactor:` Code refactoring
+   - `test:` Adding tests
+   - `chore:` Maintenance tasks
 
-### Nouvelles méthodes
+6. **Push to your fork**
+   ```bash
+   git push origin feature/your-feature-name
+   ```
 
-1. **`getEggWithIncludes($nest_id, $egg_id)`**
-   - Récupère les données complètes de l'egg avec les variables incluses
-   - Utilise le paramètre `?include=variables` dans l'API
+7. **Open a Pull Request**
+   - Provide a clear title and description
+   - Reference any related issues
+   - Include testing steps
+   - Add screenshots if UI changes
 
-2. **`buildEggVariablesFromEgg($egg)`**
-   - Construit automatiquement la chaîne de variables au format `VAR:value;VAR2:value2;`
-   - Parse `relationships.variables.data[]` depuis la réponse API
+## Coding Standards
 
-### Méthodes modifiées
+### PHP Style Guide
 
-1. **`Create()`**
-   - Utilise `getEggWithIncludes()` au lieu de `getEgg()`
-   - Applique l'AUTO-FETCH pour variables, startup et docker image
-   - Garde la compatibilité avec les valeurs manuelles (override)
+Follow [PSR-12](https://www.php-fig.org/psr/psr-12/) coding standards:
 
-2. **`ChangePackage()`**
-   - Même logique AUTO-FETCH que `Create()`
-
-### Descriptions mises à jour
-
-Les descriptions des options dans `$options` ont été mises à jour pour indiquer le comportement AUTO-FETCH :
-
+**Good:**
 ```php
-'Egg variables' => [
-    'description' => '[AUTO-FETCH] Egg variables will be fetched automatically from Wisp.gg. Manual override: variable:value;',
-],
-'Docker Image' => [
-    'description' => '[AUTO-FETCH] Docker image will be fetched automatically from Wisp.gg. Leave empty to use egg default.',
-],
-'Startup script' => [
-    'description' => '[AUTO-FETCH] Startup command will be fetched automatically from Wisp.gg. Leave empty to use egg default.',
-],
-```
-
-## 📊 Logs de débogage
-
-Le module génère des logs détaillés avec le préfixe `[AUTO-FETCH]` :
-
-```
-[2025-01-04 10:30:15] [AUTO-FETCH] Fetching egg with includes: nest=6, egg=6
-[2025-01-04 10:30:15] [AUTO-FETCH] Successfully fetched egg: Ark: Survival Evolved
-[2025-01-04 10:30:15] [AUTO-FETCH] Building egg variables from API data
-[2025-01-04 10:30:15] [AUTO-FETCH] Found variable: SERVER_MAP = TheIsland
-[2025-01-04 10:30:15] [AUTO-FETCH] Found variable: SESSION_NAME = My Server
-[2025-01-04 10:30:15] [AUTO-FETCH] Built egg variables string: SERVER_MAP:TheIsland;SESSION_NAME:My Server;...
-[2025-01-04 10:30:15] [AUTO-FETCH] Using egg docker image: quay.io/parkervcp/pterodactyl-images:debian_source
-[2025-01-04 10:30:15] [AUTO-FETCH] Using egg startup: rmv() { echo -e "stopping server"; ...
-```
-
-## 🔄 Logique de priorité
-
-Pour chaque champ (variables, startup, docker image) :
-
-```
-SI champ configuré manuellement dans HostBill :
-    ✅ Utiliser la valeur manuelle [MANUAL]
-SINON :
-    ✅ AUTO-FETCH depuis l'API Wisp.gg [AUTO-FETCH]
-```
-
-## 📝 Exemple de réponse API
-
-Exemple de structure de réponse pour un egg avec variables :
-
-```json
-{
-  "object": "egg",
-  "attributes": {
-    "id": 6,
-    "name": "Ark: Survival Evolved",
-    "docker_images": {
-      "quay.io/parkervcp/pterodactyl-images:debian_source": "quay.io/parkervcp/pterodactyl-images:debian_source"
-    },
-    "startup": "rmv() { ... }",
-    "relationships": {
-      "variables": {
-        "data": [
-          {
-            "attributes": {
-              "env_variable": "SERVER_MAP",
-              "default_value": "TheIsland"
-            }
-          },
-          {
-            "attributes": {
-              "env_variable": "SESSION_NAME",
-              "default_value": "My ARK Server"
-            }
-          }
-        ]
-      }
+public function createServer($data) {
+    $this->debugLog("Creating server with data: " . json_encode($data));
+    
+    if (empty($data['nest_id'])) {
+        $this->addError('Nest ID is required');
+        return false;
     }
-  }
+    
+    return $this->api('servers', 'POST', $data);
 }
 ```
 
-## 🚀 Installation
+**Bad:**
+```php
+public function createServer($data){
+  if(empty($data['nest_id']))return false;
+  return $this->api('servers','POST',$data);
+}
+```
 
-1. **Sauvegardez votre fichier actuel** :
-   ```bash
-   cp /path/to/modules/servers/wispgg/class.wispgg.php /path/to/modules/servers/wispgg/class.wispgg.php.backup
-   ```
+### Naming Conventions
 
-2. **Remplacez le fichier** :
-   ```bash
-   cp class.wispgg_modified.php /path/to/modules/servers/wispgg/class.wispgg.php
-   ```
+- **Classes**: PascalCase (`class WispggModule`)
+- **Methods**: camelCase (`public function getEggData()`)
+- **Variables**: snake_case (`$nest_id`, `$allocation_count`)
+- **Constants**: UPPER_SNAKE_CASE (`WISP_DEBUG_ENABLED`)
+- **Private methods**: Prefix with underscore (`private function _parseHostname()`)
 
-3. **Vérifiez les permissions** :
-   ```bash
-   chown www-data:www-data /path/to/modules/servers/wispgg/class.wispgg.php
-   chmod 644 /path/to/modules/servers/wispgg/class.wispgg.php
-   ```
+### Documentation
 
-## ⚙️ Configuration
+**Method documentation:**
+```php
+/**
+ * Get egg data with variables included
+ * 
+ * @param int $nest_id The nest ID
+ * @param int $egg_id The egg ID
+ * @return array|false Returns egg attributes or false on failure
+ */
+public function getEggWithIncludes($nest_id, $egg_id) {
+    // Implementation
+}
+```
 
-### Dans HostBill Admin
+**Inline comments for complex logic:**
+```php
+// Try with port filters first, then fallback to all allocations
+if (!empty($port_range)) {
+    $selected = $this->findAllocationsWithPagination(
+        $node_id,
+        $allocation_count,
+        $node_ip,
+        $port_prefix,
+        $allowed_ports
+    );
+    
+    // Fallback to no filters if nothing found
+    if (!$selected) {
+        $this->debugLog("No allocations with filters, trying fallback...");
+        $selected = $this->findAllocationsWithPagination(/* ... */);
+    }
+}
+```
 
-Lors de la création/modification d'un produit :
+### Debug Logging
 
-**Option 1 : AUTO-FETCH complet (recommandé)**
-- Nest : Sélectionner le nest
-- Egg : Sélectionner l'egg
-- Egg variables : **LAISSER VIDE** ← AUTO-FETCH
-- Docker Image : **LAISSER VIDE** ← AUTO-FETCH
-- Startup script : **LAISSER VIDE** ← AUTO-FETCH
+Always add debug logging for:
+- API calls
+- Important decisions (AUTO-FETCH vs manual)
+- Error conditions
+- Allocation searches
+- Variable parsing
 
-**Option 2 : Override manuel**
-- Egg variables : `MA_VARIABLE:valeur_custom;AUTRE_VAR:autre_valeur;`
-- Docker Image : `mon/image:custom`
-- Startup script : `./custom_startup.sh`
+**Use prefixes:**
+```php
+$this->debugLog("[AUTO-FETCH] Fetching egg data...");
+$this->debugLog("[MANUAL] Using configured docker image");
+$this->debugLog("ERROR: Failed to find allocations");
+$this->debugLog("Page {$page}: Selected {$count} allocations");
+```
 
-## ✅ Avantages
+### Error Handling
 
-1. **Aucune configuration manuelle** - Les variables sont récupérées automatiquement
-2. **Toujours à jour** - Si l'egg change dans Wisp.gg, les nouvelles variables sont utilisées
-3. **Moins d'erreurs** - Pas de risque de typo dans les noms de variables
-4. **Override possible** - On peut toujours forcer des valeurs manuelles si nécessaire
-5. **Logs détaillés** - Debug facile avec les logs `[AUTO-FETCH]`
+Provide context with errors:
 
-## 🔍 Vérification
+**Good:**
+```php
+if (!$egg) {
+    $this->debugLog("ERROR: Cannot retrieve egg data");
+    $this->addError('Cannot retrieve egg data from Wisp.gg');
+    $this->addError('Nest ID: ' . $nest_id);
+    $this->addError('Egg ID: ' . $egg_id);
+    return false;
+}
+```
 
-Pour vérifier que l'AUTO-FETCH fonctionne :
+**Bad:**
+```php
+if (!$egg) return false;
+```
 
-1. Activez le debug : `WISP_DEBUG_ENABLED = true`
-2. Créez un serveur de test
-3. Consultez `/tmp/wisp_debug.log`
-4. Cherchez les lignes `[AUTO-FETCH]`
+## Testing Guidelines
 
-## 🐛 Troubleshooting
+### Manual Testing Checklist
 
-**Problème** : Pas de variables récupérées
-- **Solution** : Vérifiez que l'egg a bien des variables configurées dans Wisp.gg
-- **Vérification** : Consultez les logs pour voir `[AUTO-FETCH] No variables found in egg data`
+Before submitting a PR, test:
 
-**Problème** : Mauvaise image Docker
-- **Solution** : L'API retourne soit `docker_image` (string) soit `docker_images` (object)
-- **Vérification** : Le module gère les deux cas automatiquement
+- [ ] Server creation with AUTO-FETCH (empty fields)
+- [ ] Server creation with manual values (filled fields)
+- [ ] Server creation with port range filtering
+- [ ] Server creation without port range filtering
+- [ ] Package changes (upgrade/downgrade)
+- [ ] Server suspension/unsuspension
+- [ ] Server termination
+- [ ] Multiple egg types (Minecraft, ARK, etc.)
+- [ ] Debug logs are generated correctly
+- [ ] No PHP errors in HostBill logs
 
-**Problème** : Variables non parsées
-- **Solution** : Vérifiez le format dans les logs : `VAR:value;VAR2:value2;`
-- **Note** : Pas d'espace autour du `:` ou du `;`
+### Test Scenarios
 
-## 📌 Notes importantes
+**Scenario 1: AUTO-FETCH**
+1. Create product with Nest + Egg selected
+2. Leave Egg Variables, Docker Image, Startup Script empty
+3. Create server
+4. Verify server created with correct variables
+5. Check debug log for `[AUTO-FETCH]` entries
 
-- Le module est **rétrocompatible** : les valeurs manuelles fonctionnent toujours
-- Les variables sont au format : `ENV_VAR:default_value;ENV_VAR2:value2;`
-- Le module gère les eggs sans variables (pas d'erreur)
-- Version du module : `1.0.2` (vs `1.0.1` originale)
+**Scenario 2: Manual Override**
+1. Create product with Nest + Egg selected
+2. Fill in custom Egg Variables, Docker Image, Startup Script
+3. Create server
+4. Verify server uses custom values
+5. Check debug log for `[MANUAL]` entries
 
-## 🎉 Résultat
+**Scenario 3: Port Filtering**
+1. Set Port Range to `30100-30200`
+2. Create server
+3. Verify allocation is within range
+4. Check debug log for port filtering
 
-Avec cette modification, vous pouvez :
-- Créer un produit dans HostBill
-- Sélectionner Nest + Egg
-- Laisser les champs vides
-- Le module fera tout le reste automatiquement !
+**Scenario 4: Fallback**
+1. Set Port Range that doesn't exist
+2. Create server
+3. Verify fallback to any available port
+4. Check debug log for fallback message
 
-Plus besoin de copier-coller les variables depuis Wisp.gg vers HostBill ! 🚀
+## Documentation Updates
+
+When adding features, update:
+
+- [ ] **README.md** - Main documentation
+- [ ] **Inline comments** - Code documentation
+- [ ] **Method docblocks** - PHPDoc comments
+- [ ] **Debug messages** - Helpful logging
+- [ ] **CHANGELOG.md** - Version history
+
+## Commit Message Guidelines
+
+Use clear, descriptive commit messages:
+
+**Good:**
+```
+feat: Add support for dynamic node selection
+
+- Added getNodeByLocation() method
+- Modified getNodeAndAllocations() to accept location parameter
+- Updated documentation with node selection examples
+```
+
+**Bad:**
+```
+fixed stuff
+update
+changes
+```
+
+## Release Process
+
+1. Update version in `class.wispgg.php`
+2. Update `CHANGELOG.md` with changes
+3. Update `README.md` if needed
+4. Create Git tag: `git tag -a v1.0.3 -m "Version 1.0.3"`
+5. Push tag: `git push origin v1.0.3`
+6. Create GitHub release with changelog
+
+## Questions?
+
+- **GitHub Issues**: For bugs and features
+- **GitHub Discussions**: For questions and ideas
+- **Email**: For security issues or private matters
+
+## License
+
+By contributing, you agree that your contributions will be licensed under the MIT License.
+
+---
+
+Thank you for contributing! 🚀
